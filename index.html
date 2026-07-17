@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape From Section 8!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+
+        #game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+        #main-panel {
+            background-color: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 40px);
+        }
+
+        #sidebar {
+            background-color: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 40px);
+        }
+
+        #output {
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 300px;
+        }
+
+        #input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 10px;
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-family: 'Courier Prime', monospace;
+            font-size: 14px;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: #666;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4a4a4a;
+            border: 1px solid #666;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-family: 'Courier Prime', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #5a5a5a;
+        }
+
+        button:disabled {
+            background-color: #3a3a3a;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .status-bar h3 {
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+        }
+
+        .stat-label {
+            color: #888;
+        }
+
+        .stat-value {
+            color: #fff;
+        }
+
+        .stat-critical {
+            color: #ff4444;
+        }
+
+        .stat-good {
+            color: #44ff44;
+        }
+
+        .stat-warning {
+            color: #ffaa44;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section h3 {
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .inventory-list {
+            list-style: none;
+            font-size: 12px;
+        }
+
+        .inventory-list li {
+            padding: 2px 0;
+            color: #ccc;
+        }
+
+        .action-button {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            text-align: left;
+            padding: 8px 12px;
+        }
+
+        .hud {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .tips {
+            color: #ff8844;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        #title-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #title-screen h1 {
+            font-size: 48px;
+            color: #ff4444;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        #title-screen p {
+            font-size: 16px;
+            color: #888;
+            text-align: center;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        #start-button {
+            font-size: 18px;
+            padding: 15px 40px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        @media (max-width: 768px) {
+            #game-container {
+                grid-template-columns: 1fr;
+            }
+            
+            #main-panel {
+                max-height: 60vh;
+            }
+            
+            #sidebar {
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="title-screen" class="fade-in">
+        <h1>ESCAPE FROM SECTION 8!</h1>
+        <p>A Survival Simulation</p>
+        <p>Navigate the challenges of Section 8 Pines. Survive, build relationships, find work, and maybe - just maybe - escape to something better.</p>
+        <button id="start-button" onclick="startGame()">BEGIN</button>
+    </div>
+
+    <div id="game-container" class="hidden">
+        <div id="main-panel">
+            <div id="output"></div>
+            <div id="input-container">
+                <input type="text" id="user-input" autofocus autocomplete="off" onkeydown="handleKeyDown(event)">
+                <button id="submit-button" onclick="submitInput()">SUBMIT</button>
+            </div>
+        </div>
+        
+        <div id="sidebar">
+            <div class="status-bar">
+                <h3>STATUS</h3>
+                <div id="hud"></div>
+                <div id="tips" class="tips"></div>
+            </div>
+            
+            <div class="section">
+                <h3>STATS</h3>
+                <div id="stats"></div>
+            </div>
+            
+            <div class="section">
+                <h3>INVENTORY</h3>
+                <ul id="inventory" class="inventory-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="game_core.js"></script>
+    <script src="game_actions.js"></script>
+    <script src="game_encounters.js"></script>
+    <script src="game_systems.js"></script>
+</body>
+</html>
